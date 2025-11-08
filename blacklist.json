@@ -6,13 +6,16 @@
     "7960889772": "Underaged and false accusations of illegal things.",
     "12449843": "Doxxing, harassment and more.",
     "1518095815": "Being disrespectful towards a staff member, possibly being underaged.",
-    "3764929623": "Blacklisted, see reason on account ID: 1518095815"
+    "3764929623": "Blacklisted, see reason on account ID: 1518095815",
+    "7273491228": "Asset theft"
   },
   "groups": {
     "14681081": "Private reasons, group is aware of this.",
     "35216698": "Affiliation with Delight_Holdings",
     "35571941": "Affiliation with Delight_Holdings",
     "35571941": "Affiliation with Delight_Holdings",
-    "32019613": "Underaged staff and false accusations of illegal things."
+    "32019613": "Underaged staff and false accusations of illegal things.",
+    "35025996": "Affaliation with 7273491228. Asset theft.",
+    "35451139":"Affaliation with 7273491228. Asset theft."
   }
 }
