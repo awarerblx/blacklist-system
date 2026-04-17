@@ -28,82 +28,80 @@ jobs:
           COMMIT_URL: ${{ github.event.head_commit.url }}
           AUTHOR: ${{ github.event.head_commit.author.name }}
         run: |
-          python3 <<EOF
-import json
-import requests
-import os
+          python3 - <<'EOF'
+          import json
+          import requests
+          import os
 
-WEBHOOK = os.environ["WEBHOOK"]
-COMMIT_MSG = os.environ["COMMIT_MSG"]
-COMMIT_URL = os.environ["COMMIT_URL"]
-AUTHOR = os.environ["AUTHOR"]
+          WEBHOOK = os.environ["WEBHOOK"]
+          COMMIT_MSG = os.environ["COMMIT_MSG"]
+          COMMIT_URL = os.environ["COMMIT_URL"]
+          AUTHOR = os.environ["AUTHOR"]
 
-with open("old.json") as f:
-    old = json.load(f)
+          with open("old.json") as f:
+              old = json.load(f)
 
-with open("new.json") as f:
-    new = json.load(f)
+          with open("new.json") as f:
+              new = json.load(f)
 
-def check_changes(section):
-    old_items = old.get(section, {})
-    new_items = new.get(section, {})
+          def check_changes(section):
+              old_items = old.get(section, {})
+              new_items = new.get(section, {})
 
-    added = {k:v for k,v in new_items.items() if k not in old_items}
-    removed = {k:v for k,v in old_items.items() if k not in new_items}
-    changed = {k:(old_items[k], new_items[k]) for k in new_items if k in old_items and old_items[k] != new_items[k]}
+              added = {k:v for k,v in new_items.items() if k not in old_items}
+              removed = {k:v for k,v in old_items.items() if k not in new_items}
+              changed = {k:(old_items[k], new_items[k]) for k in new_items if k in old_items and old_items[k] != new_items[k]}
 
-    return added, removed, changed
+              return added, removed, changed
 
-def send_embed(title, color, fields):
-    embed = {
-        "title": title,
-        "color": color,
-        "fields": fields,
-        "footer": {
-            "text": f"Commit: {COMMIT_MSG}"
-        },
-        "author": {
-            "name": AUTHOR
-        }
-    }
+          def send_embed(title, color, fields):
+              embed = {
+                  "title": title,
+                  "color": color,
+                  "fields": fields,
+                  "footer": {
+                      "text": f"Commit: {COMMIT_MSG}"
+                  },
+                  "author": {
+                      "name": AUTHOR
+                  },
+                  "url": COMMIT_URL
+              }
 
-    # add clickable link
-    embed["url"] = COMMIT_URL
+              requests.post(WEBHOOK, json={"embeds": [embed]})
 
-    requests.post(WEBHOOK, json={"embeds": [embed]})
+          for section in ["users", "groups"]:
+              added, removed, changed = check_changes(section)
+              name = section[:-1].capitalize()
 
-for section in ["users", "groups"]:
-    added, removed, changed = check_changes(section)
-    name = section[:-1].capitalize()
+              for k,v in added.items():
+                  send_embed(
+                      f"🟢 New {name} Blacklist",
+                      5763719,
+                      [
+                          {"name": "ID", "value": k, "inline": True},
+                          {"name": "Reason", "value": v, "inline": False}
+                      ]
+                  )
 
-    for k,v in added.items():
-        send_embed(
-            f"🟢 New {name} Blacklist",
-            5763719,
-            [
-                {"name": "ID", "value": k, "inline": True},
-                {"name": "Reason", "value": v, "inline": False}
-            ]
-        )
+              for k,v in removed.items():
+                  send_embed(
+                      f"🔴 Removed {name} Blacklist",
+                      15548997,
+                      [
+                          {"name": "ID", "value": k, "inline": True},
+                          {"name": "Reason", "value": v, "inline": False}
+                      ]
+                  )
 
-    for k,v in removed.items():
-        send_embed(
-            f"🔴 Removed {name} Blacklist",
-            15548997,
-            [
-                {"name": "ID", "value": k, "inline": True},
-                {"name": "Reason", "value": v, "inline": False}
-            ]
-        )
-
-    for k,(old_v,new_v) in changed.items():
-        send_embed(
-            f"🟡 Updated {name} Blacklist",
-            16776960,
-            [
-                {"name": "ID", "value": k, "inline": True},
-                {"name": "Old Reason", "value": old_v, "inline": False},
-                {"name": "New Reason", "value": new_v, "inline": False}
-            ]
-        )
-EOF
+              for k,(old_v,new_v) in changed.items():
+                  send_embed(
+                      f"🟡 Updated {name} Blacklist",
+                      16776960,
+                      [
+                          {"name": "ID", "value": k, "inline": True},
+                          {"name": "Old Reason", "value": old_v, "inline": False},
+                          {"name": "New Reason", "value": new_v, "inline": False}
+                      ]
+                  )
+          EOF
